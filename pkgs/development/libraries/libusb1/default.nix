@@ -29,9 +29,6 @@ stdenv.mkDerivation rec {
     lib.optional enableUdev udev ++
     lib.optionals stdenv.isDarwin [ libobjc IOKit Security ];
 
-  # Not providing the deps dir breaks the build on Windows.
-  dontAddDisableDepTrack = stdenv.targetPlatform.isWindows;
-
   dontDisableStatic = withStatic;
 
   configureFlags = lib.optional (!enableUdev) "--disable-udev";
@@ -50,4 +47,7 @@ stdenv.mkDerivation rec {
     license = licenses.lgpl21Plus;
     maintainers = with maintainers; [ prusnak ];
   };
+} // lib.optionalAttrs stdenv.targetPlatform.isWindows {
+  # Not providing the deps dir breaks the build on Windows.
+  dontAddDisableDepTrack = true;
 }
