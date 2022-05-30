@@ -29,6 +29,9 @@ stdenv.mkDerivation rec {
     lib.optional enableUdev udev ++
     lib.optionals stdenv.isDarwin [ libobjc IOKit Security ];
 
+  # Not providing the deps dir breaks the build on Windows.
+  dontAddDisableDepTrack = stdenv.targetPlatform.isWindows;
+
   dontDisableStatic = withStatic;
 
   configureFlags = lib.optional (!enableUdev) "--disable-udev";
