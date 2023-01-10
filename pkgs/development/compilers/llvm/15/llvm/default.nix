@@ -19,7 +19,8 @@
 , sysctl
 , buildLlvmTools
 , debugVersion ? false
-, doCheck ? true
+, doCheck ? (!stdenv.isx86_32 /* TODO: why */) && (!stdenv.hostPlatform.isMusl)
+  && (stdenv.hostPlatform == stdenv.buildPlatform)
 , enableManpages ? false
 , enableSharedLibraries ? !stdenv.hostPlatform.isStatic
 # broken for Ampere eMAG 8180 (c2.large.arm on Packet) #56245
@@ -323,8 +324,7 @@ in stdenv.mkDerivation (rec {
     cp NATIVE/bin/llvm-config $dev/bin/llvm-config-native
   '';
 
-  doCheck = (!stdenv.isx86_32) && (!stdenv.hostPlatform.isMusl) # TODO: why?
-    && (stdenv.hostPlatform == stdenv.buildPlatform);
+  inherit doCheck;
 
   checkTarget = "check-all";
 
