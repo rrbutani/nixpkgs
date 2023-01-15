@@ -1,4 +1,4 @@
-{ lowPrio, newScope, pkgs, lib, stdenv, cmake, ninja
+{ lowPrio, newScope, pkgs, lib, stdenv, stdenvNoCC, cmake, ninja
 , gccForLibs, preLibcCrossHeaders
 , libxml2, python3, fetchFromGitHub, overrideCC, wrapCCWith, wrapBintoolsWith
 , buildLlvmTools # tools, but from the previous stage, for cross
@@ -301,6 +301,15 @@ in let
       # what stdenv we use here, as long as CMake is happy.
       cxx-headers = callPackage ./libcxx {
         inherit llvm_meta;
+        # Note that if we use the regular stdenv here we'll get cycle errors
+        # when attempting to use this compiler in the stdenv.
+        #
+        # The final stdenv pulls `cxx-headers` from the package set where
+        # hostPlatform *is* the target platform which means that `stdenv` at
+        # that point attempts to use this toolchain.
+        #
+        # So, we use `stdenvNoCC` to sidestep this issue.
+        stdenv = stdenvNoCC;
         headersOnly = true;
       };
 
