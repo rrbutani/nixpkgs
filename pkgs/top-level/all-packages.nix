@@ -74,7 +74,7 @@ with pkgs;
       # thing to to create an earlier thing (leading to infinite recursion) and
       # we also would still respect the stage arguments choices for these
       # things.
-      overrideCC stdenv buildPackages.llvmPackages.clangNoCompilerRt
+      overrideCC stdenv buildPackages.${stdenv.hostPlatform.llvmPackageSetName or "llvmPackages"}.clangNoCompilerRt ####
     else mkStdenvNoLibs stdenv;
 
   gccStdenvNoLibs = mkStdenvNoLibs gccStdenv;
@@ -14650,7 +14650,7 @@ with pkgs;
 
   crossLibcStdenv =
     if stdenv.hostPlatform.useLLVM or false || stdenv.hostPlatform.isDarwin
-    then overrideCC stdenv buildPackages.llvmPackages.clangNoLibc
+    then overrideCC stdenv buildPackages.${stdenv.hostPlatform.llvmPackageSetName or "llvmPackages"}.clangNoLibc
     else gccCrossLibcStdenv;
 
   # The GCC used to build libc for the target platform. Normal gccs will be
@@ -21160,7 +21160,7 @@ with pkgs;
 
   libcxxrt = callPackage ../development/libraries/libcxxrt {
     stdenv = if stdenv.hostPlatform.useLLVM or false
-             then overrideCC stdenv buildPackages.llvmPackages.tools.clangNoLibcxx
+             then overrideCC stdenv buildPackages.${stdenv.hostPlatform.llvmPackageSetName}.tools.clangNoLibcxx
              else stdenv;
   };
 

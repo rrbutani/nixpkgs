@@ -211,7 +211,25 @@ rec {
 
     }) // mapAttrs (n: v: v final.parsed) inspect.predicates
       // mapAttrs (n: v: v final.gcc.arch or "default") architectures.predicates
-      // args;
+      // args
+      // (lib.optionalAttrs ((
+        (builtins.trace args args.useLLVM or false)) != false) {
+      # `useLLVM` can be a boolean _or_ an int/string specifying what LLVM
+      # version to use for the system.
+      #
+      # We want to normalize `useLLVM` to a boolean and also expose
+      # `llvmPackageSetName`.
+      #
+      # Note that this means we will actually *override* the user's `useLLVM`
+      # value here (but not `llvmPackageSetName`, if it's specified by the
+      # user).
+      useLLVM = true;
+      ${ if args ? llvmPackageSetName then null else "llvmPackageSetName" } =
+        /**/ if args.useLLVM == true then "llvmPackages"
+        else if builtins.isInt args.useLLVM then "llvmPackages_${builtins.toString args.useLLVM}"
+        else if builtins.isString args.useLLVM then args.useLLVM
+        else throw "`useLLVM` must be a boolean, an int, or a string";
+    });
   in assert final.useAndroidPrebuilt -> final.isAndroid;
      assert lib.foldl
        (pass: { assertion, message }:

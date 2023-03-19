@@ -110,4 +110,10 @@ let
 in {
   gcc = (lib.mapAttrs (_: mapMultiPlatformTest (system: system // {useLLVM = false;})) tests);
   llvm = (lib.mapAttrs (_: mapMultiPlatformTest (system: system // {useLLVM = true;})) tests);
+
+  # TODO: move elsewhere
+  # test that `stdenv.hostPlatform.cc.cc.version` has a major version matching what we asked for...
+
+  # test that `llvmPackageSetName` is correct (test: boolean, number, string and then test that if we set true/int/string and specify our own string its preserved!)
+  # TODO: this is actually an `elaborate` test..
 }
