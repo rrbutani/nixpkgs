@@ -11,7 +11,7 @@
   int = a: if a then 1 else 0;
   xor = a: b: ((builtins.bitXor (int a) (int b)) == 1);
   src = if gitRelease != null then gitRelease else officialRelease;
-in assert
+in assert lib.assertMsg
   (xor
     (gitRelease != null)
     (officialRelease != null))

@@ -10,9 +10,9 @@
   - [ ] auto updater stuff..
 
 
-  - [ ] bump all LLVM package sets to latest patch version..
+  - [ ] switch all to using `git` (commit)
+  - [ ] bump all LLVM package sets to latest patch version.. (commit)
   - [ ] link changelogs in meta...
-  - [ ] switch all to using `git`
 
 ----
 

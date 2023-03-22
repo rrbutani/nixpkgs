@@ -41,7 +41,7 @@
   # {
   #   version = /* i.e. "15.0.0" */;
   #   rev = /* commit SHA */;
-  #   rev-version = /* human readable version; i.e. "unstable-2022-26-07" */;
+  #   rev-version = /* human readable version; i.e. "unstable-2022-07-26" */;
   #   hash = /* checksum for this release, can omit if specifying your own `monorepoSrc` */;
   # }
 , officialRelease ? defaults.officialRelease or null
@@ -59,9 +59,12 @@
 # specified (we attempt to check this during the LLVM package's build, too).
 , monorepoSrc ? defaults.monorepoSrc or null
 }: let
+  originalMonorepoSrc = monorepoSrc;
+in let
   releaseInfo = import ./utils/process-release-options.nix {
     inherit lib fetchFromGitHub;
-    inherit gitRelease officialRelease monorepoSrc;
+    inherit gitRelease officialRelease;
+    monorepoSrc = originalMonorepoSrc;
   };
   inherit (releaseInfo) monorepoSrc release_version version;
 
@@ -178,6 +181,7 @@
 
       wrapClang =
         { includeCompilerRt ? false
+        , useCompilerRtForCompilerBuiltins ? includeCompilerRt # in lieu of `lgcc_s`?
         , includeLibc ? false
         , cxxStdlib ? "none" # "none", "libstdc++", "libc++"
         , extraPackages ? []
@@ -205,6 +209,7 @@
             };
           };
         in
+          assert useCompilerRtForCompilerBuiltins -> includeCompilerRt;
           assert cxxStdlibMap ? ${cxxStdlib};
           assert (cxxStdlib != "none") -> includeLibc;
         wrapCCWith rec {
@@ -220,7 +225,7 @@
             inherit includeCompilerRt;
           };
           nixSupport.cc-cflags = []
-            ++ lib.optionals includeCompilerRt [
+            ++ lib.optionals useCompilerRtForCompilerBuiltins [
               "-rtlib=compiler-rt"
 
               # TODO: is this actually necessary? seems like we don't need this
@@ -379,15 +384,24 @@
         else if (pkgs.targetPackages.stdenv or stdenv).cc.isGNU then tools.libstdcxxClang
         else tools.libcxxClang;
 
-      libstdcxxClang = wrapCCWith rec {
+      # compiler-rt: ✅, libc: ✅, C++ stdlib: stdlibc++
+      libstdcxxClang = wrapClang {
+        includeCompilerRt = true;
+        useCompilerRtForCompilerBuiltins = false;
+        includeLibc = true;
+        cxxStdlib = "libstdc++";
+      };
+      /* libstdcxxClang = wrapCCWith rec {
         cc = tools.clang-unwrapped;
         # libstdcxx is taken from gcc in an ad-hoc way in cc-wrapper.
         libcxx = null;
         extraPackages = [
           targetLlvmLibraries.compiler-rt
         ];
-        extraBuildCommands = mkExtraBuildCommands cc;
-      };
+        extraBuildCommands = mkExtraCcWrapperBuildCommands cc {
+
+        };
+      }; */
       # Note: does *not* include the compiler-rt flag (but still puts it in
       # extra packages and still adds the extra build command for it's symlnk...
       # why?). TODO
@@ -407,7 +421,15 @@
       # we'd use our own bintools instead of the package set's (LLVM)
       # pkgs.bintools. TODO
 
-      libcxxClang = wrapCCWith rec {
+      # compiler-rt: ✅, libc: ✅, C++ stdlib: libc++ (but still libgcc_s?)
+      libcxxClang = wrapClang {
+        includeCompilerRt = true;
+        useCompilerRtForCompilerBuiltins = false;
+        includeLibc = true;
+        cxxStdlib = "libc++";
+      };
+
+      /* libcxxClang = wrapCCWith rec {
         cc = tools.clang-unwrapped;
         libcxx = targetLlvmLibraries.libcxx;
         extraPackages = [
@@ -415,7 +437,7 @@
           targetLlvmLibraries.compiler-rt
         ];
         extraBuildCommands = mkExtraBuildCommands cc;
-      };
+      }; */
     })
   );
 
@@ -504,7 +526,7 @@
 # `makeExtensible` here isn't _really_ necessary but we use it anyways to make
 # overriding packages within the set a little more convenient for users.
 in lib.makeExtensible (llvmPackageSet:
-  { inherit tools libraries release_version; }
-  // llvmPackageSet.tools
-  // llvmPackageSet.libraries
+  { inherit tools libraries monorepoSrc release_version; } # TODO: is it okay to include monorepoSrc here?
+  # // llvmPackageSet.tools
+  # // llvmPackageSet.libraries
 )
