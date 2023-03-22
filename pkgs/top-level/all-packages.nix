@@ -14344,6 +14344,9 @@ with pkgs;
 
   chez-matchable = callPackage ../development/chez-modules/chez-matchable { };
 
+  # TODO: unlike `clang-tools` and `clang-analyzer` this uses `llvmPackages`
+  # instead of `llvmPackages_latest`..
+  clang = llvmPackages.clang;
   libclang = llvmPackages.libclang;
   clang-manpages = llvmPackages.clang-manpages;
 
@@ -14354,65 +14357,8 @@ with pkgs;
     };
   };
 
-  clang = llvmPackages.clang;
-  clang_5  = llvmPackages_5.clang;
-  clang_6  = llvmPackages_6.clang;
-  clang_7  = llvmPackages_7.clang;
-  clang_8  = llvmPackages_8.clang;
-  clang_9  = llvmPackages_9.clang;
-  clang_10 = llvmPackages_10.clang;
-  clang_11 = llvmPackages_11.clang;
-  clang_12 = llvmPackages_12.clang;
-  clang_13 = llvmPackages_13.clang;
-  clang_14 = llvmPackages_14.clang;
-  clang_15 = llvmPackages_15.clang;
-
   clang-tools = callPackage ../development/tools/clang-tools {
     llvmPackages = llvmPackages_latest;
-  };
-
-  clang-tools_5 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_5;
-  };
-
-  clang-tools_6 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_6;
-  };
-
-  clang-tools_7 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_7;
-  };
-
-  clang-tools_8 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_8;
-  };
-
-  clang-tools_9 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_9;
-  };
-
-  clang-tools_10 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_10;
-  };
-
-  clang-tools_11 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_11;
-  };
-
-  clang-tools_12 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_12;
-  };
-
-  clang-tools_13 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_13;
-  };
-
-  clang-tools_14 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_14;
-  };
-
-  clang-tools_15 = callPackage ../development/tools/clang-tools {
-    llvmPackages = llvmPackages_15;
   };
 
   clang-analyzer = callPackage ../development/tools/analysis/clang-analyzer {
@@ -15365,47 +15311,15 @@ with pkgs;
   };
 
   lld = llvmPackages.lld;
-  lld_5 = llvmPackages_5.lld;
-  lld_6 = llvmPackages_6.lld;
-  lld_7 = llvmPackages_7.lld;
-  lld_8 = llvmPackages_8.lld;
-  lld_9 = llvmPackages_9.lld;
-  lld_10 = llvmPackages_10.lld;
-  lld_11 = llvmPackages_11.lld;
-  lld_12 = llvmPackages_12.lld;
-  lld_13 = llvmPackages_13.lld;
-  lld_14 = llvmPackages_14.lld;
-  lld_15 = llvmPackages_15.lld;
 
+  # TODO: this uses `llvmPackages_latest`, why?
   lldb = llvmPackages_latest.lldb;
-  lldb_5 = llvmPackages_5.lldb;
-  lldb_6 = llvmPackages_6.lldb;
-  lldb_7 = llvmPackages_7.lldb;
-  lldb_8 = llvmPackages_8.lldb;
-  lldb_9 = llvmPackages_9.lldb;
-  lldb_10 = llvmPackages_10.lldb;
-  lldb_11 = llvmPackages_11.lldb;
-  lldb_12 = llvmPackages_12.lldb;
-  lldb_13 = llvmPackages_13.lldb;
-  lldb_14 = llvmPackages_14.lldb;
-  lldb_15 = llvmPackages_15.lldb;
 
   llvm = llvmPackages.llvm;
-  llvm_5  = llvmPackages_5.llvm;
-  llvm_6  = llvmPackages_6.llvm;
-  llvm_7  = llvmPackages_7.llvm;
-  llvm_8  = llvmPackages_8.llvm;
-  llvm_9  = llvmPackages_9.llvm;
-  llvm_10 = llvmPackages_10.llvm;
-  llvm_11 = llvmPackages_11.llvm;
-  llvm_12 = llvmPackages_12.llvm;
-  llvm_13 = llvmPackages_13.llvm;
-  llvm_14 = llvmPackages_14.llvm;
-  llvm_15 = llvmPackages_15.llvm;
-
   libllvm = llvmPackages.libllvm;
   llvm-manpages = llvmPackages.llvm-manpages;
 
+  # TODO: when does this get bumped?
   llvmPackages = let
     latest_version = lib.toInt
       (lib.versions.major llvmPackages_latest.llvm.version);
@@ -15426,82 +15340,59 @@ with pkgs;
       stdenv.targetPlatform));
   in pkgs.${"llvmPackages_${minSupported}"};
 
-  llvmPackages_5 = recurseIntoAttrs (callPackage ../development/compilers/llvm/5 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_5.tools;
-    targetLlvm = targetPackages.llvmPackages_5.llvm or llvmPackages_5.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_5.libraries or llvmPackages_5.libraries;
-  });
+  llvmPackageSet = num: let
+    suffixed = p: "${p}_${builtins.toString num}";
+    name = suffixed "llvmPackages";
+    attrs = {
+      ${name} = recurseIntoAttrs (callPackage ../development/compilers/llvm/${builtins.toString num} {
+        inherit (stdenvAdapters) overrideCC;
+        buildLlvmTools = buildPackages.${name}.tools;
+        targetLlvm = targetPackages.${name}.llvm or attrs.${name}.llvm;
+        targetLlvmLibraries = targetPackages.${name}.libraries or attrs.${name}.libraries;
+      });
 
-  llvmPackages_6 = recurseIntoAttrs (callPackage ../development/compilers/llvm/6 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_6.tools;
-    targetLlvm = targetPackages.llvmPackages_6.llvm or llvmPackages_6.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_6.libraries or llvmPackages_6.libraries;
-  });
+      ${suffixed "clang"} = attrs.${name}.clang;
+      ${suffixed "clang-tools"} = callPackage ../development/tools/clang-tools {
+        llvmPackages = attrs.${name};
+      };
+      ${suffixed "lld"} = attrs.${name}.lld;
+      ${suffixed "lldb"} = attrs.${name}.lldb;
+      ${suffixed "llvm"} = attrs.${name}.llvm;
+    };
+  in attrs;
 
-  llvmPackages_7 = recurseIntoAttrs (callPackage ../development/compilers/llvm/7 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_7.tools;
-    targetLlvm = targetPackages.llvmPackages_7.llvm or llvmPackages_7.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_7.libraries or llvmPackages_7.libraries;
-  });
+  inherit (llvmPackageSet 5) llvmPackages_5
+    clang_5 clang-tools_5 lld_5 lldb_5 llvm_5;
 
-  llvmPackages_8 = recurseIntoAttrs (callPackage ../development/compilers/llvm/8 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_8.tools;
-    targetLlvm = targetPackages.llvmPackages_8.llvm or llvmPackages_8.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_8.libraries or llvmPackages_8.libraries;
-  });
+  inherit (llvmPackageSet 6) llvmPackages_6
+    clang_6 clang-tools_6 lld_6 lldb_6 llvm_6;
 
-  llvmPackages_9 = recurseIntoAttrs (callPackage ../development/compilers/llvm/9 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_9.tools;
-    targetLlvm = targetPackages.llvmPackages_9.llvm or llvmPackages_9.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_9.libraries or llvmPackages_9.libraries;
-  });
+  inherit (llvmPackageSet 7) llvmPackages_7
+    clang_7 clang-tools_7 lld_7 lldb_7 llvm_7;
 
-  llvmPackages_10 = recurseIntoAttrs (callPackage ../development/compilers/llvm/10 {
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_10.tools;
-    targetLlvm = targetPackages.llvmPackages_10.llvm or llvmPackages_10.llvm;
-    targetLlvmLibraries = targetPackages.llvmPackages_10.libraries or llvmPackages_10.libraries;
-  });
+  inherit (llvmPackageSet 8) llvmPackages_8
+    clang_8 clang-tools_8 lld_8 lldb_8 llvm_8;
 
-  llvmPackages_11 = recurseIntoAttrs (callPackage ../development/compilers/llvm/11 ({
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_11.tools;
-    targetLlvmLibraries = targetPackages.llvmPackages_11.libraries or llvmPackages_11.libraries;
-    targetLlvm = targetPackages.llvmPackages_11.llvm or llvmPackages_11.llvm;
-  }));
+  inherit (llvmPackageSet 9) llvmPackages_9
+    clang_9 clang-tools_9 lld_9 lldb_9 llvm_9;
 
-  llvmPackages_12 = recurseIntoAttrs (callPackage ../development/compilers/llvm/12 ({
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_12.tools;
-    targetLlvmLibraries = targetPackages.llvmPackages_12.libraries or llvmPackages_12.libraries;
-    targetLlvm = targetPackages.llvmPackages_12.llvm or llvmPackages_12.llvm;
-  }));
+  inherit (llvmPackageSet 10) llvmPackages_10
+    clang_10 clang-tools_10 lld_10 lldb_10 llvm_10;
 
-  llvmPackages_13 = recurseIntoAttrs (callPackage ../development/compilers/llvm/13 ({
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_13.tools;
-    targetLlvmLibraries = targetPackages.llvmPackages_13.libraries or llvmPackages_13.libraries;
-    targetLlvm = targetPackages.llvmPackages_13.llvm or llvmPackages_13.llvm;
-  }));
+  inherit (llvmPackageSet 11) llvmPackages_11
+    clang_11 clang-tools_11 lld_11 lldb_11 llvm_11;
 
-  llvmPackages_14 = recurseIntoAttrs (callPackage ../development/compilers/llvm/14 ({
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_14.tools;
-    targetLlvmLibraries = targetPackages.llvmPackages_14.libraries or llvmPackages_14.libraries;
-    targetLlvm = targetPackages.llvmPackages_14.llvm or llvmPackages_14.llvm;
-  }));
+  inherit (llvmPackageSet 12) llvmPackages_12
+    clang_12 clang-tools_12 lld_12 lldb_12 llvm_12;
 
-  llvmPackages_15 = recurseIntoAttrs (callPackage ../development/compilers/llvm/15 ({
-    inherit (stdenvAdapters) overrideCC;
-    buildLlvmTools = buildPackages.llvmPackages_15.tools;
-    targetLlvmLibraries = targetPackages.llvmPackages_15.libraries or llvmPackages_15.libraries;
-    targetLlvm = targetPackages.llvmPackages_15.llvm or llvmPackages_15.llvm;
-  }));
+  inherit (llvmPackageSet 13) llvmPackages_13
+    clang_13 clang-tools_13 lld_13 lldb_13 llvm_13;
+
+  inherit (llvmPackageSet 14) llvmPackages_14
+    clang_14 clang-tools_14 lld_14 lldb_14 llvm_14;
+
+  inherit (llvmPackageSet 15) llvmPackages_15
+    clang_15 clang-tools_15 lld_15 lldb_15 llvm_15;
 
   llvmPackages_latest = llvmPackages_14;
 
