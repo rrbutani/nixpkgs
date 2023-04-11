@@ -18,8 +18,8 @@ final: prev: let
   # E.g. for cudaPackages_11_8 we use gcc11 with gcc12's libstdc++
   # Cf. https://github.com/NixOS/nixpkgs/pull/218265 for context
   backendStdenv = final.callPackage ./stdenv.nix {
-    nixpkgsStdenv = prev.pkgs.stdenv;
-    nvccCompatibleStdenv = prev.pkgs.buildPackages."${finalVersion.gcc}Stdenv";
+    nixpkgsCompatibleLibstdcxx = prev.pkgs.buildPackages.gcc.cc.lib; # Or is it targetPackages?
+    nvccCompatibleCC = prev.pkgs.buildPackages."${finalVersion.gcc}".cc;
   };
 
   ### Add classic cudatoolkit package
