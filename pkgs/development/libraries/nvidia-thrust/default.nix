@@ -27,7 +27,7 @@ let
   pname = "nvidia-thrust";
   version = "1.16.0";
 
-  inherit (cudaPackages) backendStdenv cudaFlags;
+  inherit (cudaPackages) cudaFlags;
   cudaCapabilities = map cudaFlags.dropDot cudaFlags.cudaCapabilities;
 
   tbbSupport = builtins.elem "TBB" [ deviceSystem hostSystem ];
