@@ -229,22 +229,27 @@ rec {
 
   # See: https://github.com/rust-lang/rust/pull/56769/files#r241916113
   i686-uefi = {
-    config = "i686-unknown-windows-gnu";
+    # config = "i686-unknown-windows-gnu";
+    config = "i686-pc-win32-coff";
     rust.config = "i686-unknown-uefi";
     useLLVM = true;
     libc = null;
   };
 
   x86_64-uefi = {
-    config = "x86_64-unknown-windows-msvc";
+    # config = "x86_64-unknown-windows-msvc";
+    config = "x86_64-pc-win32-coff";
     rust.config = "x86_64-unknown-uefi";
     useLLVM = true;
+    libc = null;
   };
 
   aarch64-uefi = {
-    config = "aarch64-unknown-windows-msvc";
+    # config = "aarch64-unknown-windows-msvc";
+    config = "aarch64-pc-win32-coff";
     rust.config = "aarch64-unknown-uefi";
     useLLVM = true;
+    libc = null;
   };
 
   #

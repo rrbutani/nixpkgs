@@ -84,6 +84,8 @@ rec {
     isMusl         = with abis; map (a: { abi = a; }) [ musl musleabi musleabihf muslabin32 muslabi64 ];
     isUClibc       = with abis; map (a: { abi = a; }) [ uclibc uclibceabi uclibceabihf ];
 
+    isUefi         = { /* kernel = kernels.windows; replace with none? */ abi = abis.coff; vendor = vendors.pc; }; # this may not be restrictive enough? TODO
+
     isEfi = [
       { cpu = { family = "arm"; version = "6"; }; }
       { cpu = { family = "arm"; version = "7"; }; }

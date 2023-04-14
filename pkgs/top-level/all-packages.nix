@@ -5181,6 +5181,8 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
+  lanzaboote = callPackage ../tools/misc/lanzaboote { };
+
   lapce = callPackage ../applications/editors/lapce {
     inherit (darwin) libobjc;
     inherit (darwin.apple_sdk.frameworks) Security CoreServices ApplicationServices Carbon AppKit;
