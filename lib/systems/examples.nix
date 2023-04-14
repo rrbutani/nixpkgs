@@ -191,6 +191,8 @@ rec {
     };
   };
 
+
+
   aarch64-embedded = {
     config = "aarch64-none-elf";
     libc = "newlib";
@@ -219,6 +221,30 @@ rec {
   x86_64-embedded = {
     config = "x86_64-elf";
     libc = "newlib";
+  };
+
+  #
+  # UEFI
+  #
+
+  # See: https://github.com/rust-lang/rust/pull/56769/files#r241916113
+  i686-uefi = {
+    config = "i686-unknown-windows-gnu";
+    rust.config = "i686-unknown-uefi";
+    useLLVM = true;
+    libc = null;
+  };
+
+  x86_64-uefi = {
+    config = "x86_64-unknown-windows-msvc";
+    rust.config = "x86_64-unknown-uefi";
+    useLLVM = true;
+  };
+
+  aarch64-uefi = {
+    config = "aarch64-unknown-windows-msvc";
+    rust.config = "aarch64-unknown-uefi";
+    useLLVM = true;
   };
 
   #
