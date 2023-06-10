@@ -259,6 +259,11 @@ let
       overlays = [ (self': super': {
         pkgsStatic = super';
       })] ++ overlays;
+      # TODO: set `isStatic` on Darwin so we still get the "mostly static"
+      # binaries...
+      #
+      # See: https://github.com/NixOS/nixpkgs/blob/ba0f52d80375147840b83f1511599fbe333be3ad/pkgs/stdenv/adapters.nix#L93-L116
+      # And: https://github.com/NixOS/nixpkgs/blob/ba0f52d80375147840b83f1511599fbe333be3ad/pkgs/stdenv/cross/default.nix#L40-L42
     } // lib.optionalAttrs stdenv.hostPlatform.isLinux {
       crossSystem = {
         isStatic = true;
