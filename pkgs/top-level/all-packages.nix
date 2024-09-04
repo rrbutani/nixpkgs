@@ -23731,8 +23731,6 @@ with pkgs;
 
   stxxl = callPackage ../development/libraries/stxxl { };
 
-  sv-lang = callPackage ../applications/science/electronics/sv-lang { };
-
   sqld = callPackage ../servers/sql/sqld { };
 
   sqlite = lowPrio (callPackage ../development/libraries/sqlite { });
