@@ -156,7 +156,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://sv-lang.com/";
     changelog = "https://github.com/MikePopoloski/slang/releases/tag/v${finalAttrs.version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ sharzy ];
+    maintainers = with maintainers; [ sharzy rrbutani ];
     platforms = platforms.all;
   } // lib.optionalAttrs finalAttrs.includeTools {
     mainProgram = "slang";
