@@ -13,10 +13,12 @@
 , boost182
 , catch2_3
 , fmt
+, mimalloc
 
 # options
 , doCheck ? includeTools
 , includeTools ? true
+, useMimalloc ? true
 }:
   assert doCheck -> includeTools; # the regression tests need `slang::driver`
 
@@ -49,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  inherit includeTools;
+  inherit includeTools useMimalloc;
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
     (lib.cmakeBool "SLANG_INCLUDE_TOOLS" finalAttrs.includeTools)
-    (lib.cmakeBool "SLANG_USE_MIMALLOC" false)
+    (lib.cmakeBool "SLANG_USE_MIMALLOC" finalAttrs.useMimalloc)
   ];
 
   nativeBuildInputs = [
@@ -65,7 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     boost182
     fmt
-  ];
+  ] ++ lib.optional finalAttrs.useMimalloc mimalloc;
 
   nativeCheckInputs = [ catch2_3 ];
   inherit doCheck;
@@ -79,7 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
   in {
     # ensure that the options work:
     noTests = (withOpts { doCheck = false; }).tests.version;
+    systemAllocator = (withOpts { useMimalloc = false; }).tests.version;
     noTools = withOpts { includeTools = false; doCheck = false; };
+    small = withOpts {
+      includeTools = false; doCheck = false; useMimalloc = false;
+    };
   } // lib.optionalAttrs finalAttrs.includeTools {
     version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
