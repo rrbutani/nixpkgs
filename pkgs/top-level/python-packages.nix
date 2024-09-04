@@ -14613,6 +14613,12 @@ self: super: with self; {
 
   slack-sdk = callPackage ../development/python-modules/slack-sdk { };
 
+  slang-verilog = toPythonModule (pkgs.slang-verilog.override {
+    enablePython = true;
+    includeTools = false;
+    pythonPackages = self;
+  }).python;
+
   sleekxmpp = callPackage ../development/python-modules/sleekxmpp { };
 
   sleekxmppfs = callPackage ../development/python-modules/sleekxmppfs { };
@@ -15334,12 +15340,6 @@ self: super: with self; {
   svgutils = callPackage ../development/python-modules/svgutils { };
 
   svgwrite = callPackage ../development/python-modules/svgwrite { };
-
-  sv-lang = toPythonModule (pkgs.sv-lang.override {
-    enablePython = true;
-    includeTools = false;
-    pythonPackages = self;
-  }).python;
 
   sv-ttk = callPackage ../development/python-modules/sv-ttk { };
 

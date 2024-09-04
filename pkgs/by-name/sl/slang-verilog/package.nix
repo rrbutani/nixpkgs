@@ -26,7 +26,7 @@
   assert enablePython -> !useMimalloc; # mimalloc is incompatible w/py bindings
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "sv-lang";
+  pname = "slang-verilog"; # https://repology.org/project/slang-verilog
   version = "6.0";
 
   src = fetchFromGitHub {
@@ -70,8 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
   #
   # This leads to duplicate symbol errors when linking `slang` binaries:
   # ```
-  # sv-lang> .../bin/ld: <mimalloc>/lib/libmimalloc.a(alloc.c.o): in function `mi_new':
-  # sv-lang> (.text+0x2c10): multiple definition of `operator new(unsigned long)'; <sv-lang>/lib/libsvlang.a(Util.cpp.o):Util.cpp:(.text+0x40): first defined here
+  # slang> .../bin/ld: <mimalloc>/lib/libmimalloc.a(alloc.c.o): in function `mi_new':
+  # slang> (.text+0x2c10): multiple definition of `operator new(unsigned long)'; <slang>/lib/libsvlang.a(Util.cpp.o):Util.cpp:(.text+0x40): first defined here
   # ```
   #
   # Also see:
