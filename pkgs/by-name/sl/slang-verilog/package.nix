@@ -3,6 +3,7 @@
 , fetchFromGitHub
 , fetchpatch
 , testers
+, nix-update-script
 
 # build deps:
 , cmake
@@ -140,6 +141,8 @@ stdenv.mkDerivation (finalAttrs: {
   } // lib.optionalAttrs finalAttrs.includeTools {
     version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = with lib; {
     description = "SystemVerilog compiler and language services";
