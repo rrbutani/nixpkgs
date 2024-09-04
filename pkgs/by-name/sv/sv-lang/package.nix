@@ -51,6 +51,38 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  # When building with `mimalloc`, slang includes `mimalloc-new-delete.h` which
+  # (re)defines the C++ `new` and `delete` operators:
+  #   - https://github.com/MikePopoloski/slang/blob/v6.0/source/util/Util.cpp#L12-L14
+  #   - https://github.com/microsoft/mimalloc/blob/v2.1.7/include/mimalloc-new-delete.h#L8-L20
+  #
+  # Because our (nixpkgs') `mimalloc` is built with `-DMI_OVERRIDE=On` (the
+  # default), `libmimalloc.a`'s `alloc.c.o` contains redefinitions of the `new`
+  # and `delete` operators as well:
+  #   - https://github.com/microsoft/mimalloc/blob/v2.1.7/CMakeLists.txt#L10
+  #   - https://github.com/microsoft/mimalloc/blob/v2.1.7/CMakeLists.txt#L589-L591
+  #   - https://github.com/microsoft/mimalloc/blob/v2.1.7/src/alloc.c#L20
+  #   - https://github.com/microsoft/mimalloc/blob/v2.1.7/src/alloc-override.c#L152-L237
+  #
+  # This leads to duplicate symbol errors when linking `slang` binaries:
+  # ```
+  # sv-lang> .../bin/ld: <mimalloc>/lib/libmimalloc.a(alloc.c.o): in function `mi_new':
+  # sv-lang> (.text+0x2c10): multiple definition of `operator new(unsigned long)'; <sv-lang>/lib/libsvlang.a(Util.cpp.o):Util.cpp:(.text+0x40): first defined here
+  # ```
+  #
+  # Also see:
+  #   - https://github.com/microsoft/mimalloc/issues/535#issuecomment-1020553023
+  #   - https://github.com/microsoft/mimalloc/issues/559#issuecomment-1916408486
+  #
+  # `slang` — when building `mimalloc` itself — sets `MI_OVERRIDE` to `OFF` to
+  # avoid this issue:
+  #   - https://github.com/MikePopoloski/slang/blob/v6.0/external/CMakeLists.txt#L78-L80
+  #
+  # To work around this we "inhibit" `mimalloc-new-delete.h` by manually
+  # defining its preprocessor include guard symbol:
+  env.NIX_CFLAGS_COMPILE = lib.optionalString
+    finalAttrs.useMimalloc "-DMIMALLOC_NEW_DELETE_H=1";
+
   inherit includeTools useMimalloc;
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
