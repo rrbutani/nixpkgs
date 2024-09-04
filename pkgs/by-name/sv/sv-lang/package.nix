@@ -26,11 +26,29 @@
     sha256 = "sha256-mT8sfUz0H4jWM/SkV/uW4kmVKE9UQy6XieG65yJvIA8=";
   };
 
-  cmakeFlags = [
-    # fix for https://github.com/NixOS/nixpkgs/issues/144170
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
+  outputs = [ "out" "lib" "dev" ];
 
+  # See: https://github.com/NixOS/nixpkgs/issues/144170
+  # See: https://github.com/MikePopoloski/slang/blob/v6.0/scripts/sv-lang.pc.in#L2-L3
+  #
+  # slang's `includedir` and `libdir` in `sv-lang.pc` are hardcoded to be
+  # `${prefix}`-relative paths; when using multiple outputs (i.e. `lib`, `dev`)
+  # these directories do not share a prefix. So, we strip `${prefix}` from the
+  # pkg-config template — `CMAKE_INSTALL_INCLUDEDIR` and `CMAKE_INSTALL_LIBDIR`
+  # are (when set by the cmake setup hook) already absolute paths.
+  patchPhase = ''
+    runHook prePatch
+
+    substituteInPlace ./scripts/sv-lang.pc.in \
+      --replace-fail \
+        "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" '@CMAKE_INSTALL_INCLUDEDIR@' \
+      --replace-fail \
+        "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_LIBDIR@'
+
+    runHook postPatch
+  '';
+
+  cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
     (lib.cmakeBool "SLANG_USE_MIMALLOC" false)
   ];
