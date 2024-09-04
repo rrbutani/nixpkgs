@@ -146,7 +146,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     description = "SystemVerilog compiler and language services";
-    homepage = "https://github.com/MikePopoloski/slang";
+    longDescription = ''
+      slang is a software library that provides various components for lexing,
+      parsing, type checking, and elaborating SystemVerilog code. It comes with
+      an executable tool that can compile and lint any SystemVerilog project,
+      but it is also intended to be usable as a front end for synthesis tools,
+      simulators, linters, code editors, and refactoring tools.
+    '';
+    homepage = "https://sv-lang.com/";
+    changelog = "https://github.com/MikePopoloski/slang/releases/tag/v${finalAttrs.version}";
     license = licenses.mit;
     maintainers = with maintainers; [ sharzy ];
     platforms = platforms.all;
