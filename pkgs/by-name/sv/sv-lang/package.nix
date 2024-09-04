@@ -1,6 +1,7 @@
 { lib
 , stdenv
 , fetchFromGitHub
+, fetchpatch
 , testers
 
 # build deps:
@@ -30,23 +31,19 @@
 
   # See: https://github.com/NixOS/nixpkgs/issues/144170
   # See: https://github.com/MikePopoloski/slang/blob/v6.0/scripts/sv-lang.pc.in#L2-L3
+  # See: https://github.com/dtzWill/slang/commit/36138d6775be144968dd9d126ba4089277c14054
   #
   # slang's `includedir` and `libdir` in `sv-lang.pc` are hardcoded to be
   # `${prefix}`-relative paths; when using multiple outputs (i.e. `lib`, `dev`)
   # these directories do not share a prefix. So, we strip `${prefix}` from the
   # pkg-config template — `CMAKE_INSTALL_INCLUDEDIR` and `CMAKE_INSTALL_LIBDIR`
   # are (when set by the cmake setup hook) already absolute paths.
-  patchPhase = ''
-    runHook prePatch
-
-    substituteInPlace ./scripts/sv-lang.pc.in \
-      --replace-fail \
-        "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" '@CMAKE_INSTALL_INCLUDEDIR@' \
-      --replace-fail \
-        "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_LIBDIR@'
-
-    runHook postPatch
-  '';
+  patches = [
+    (fetchpatch {
+      url = "https://github.com/MikePopoloski/slang/commit/36138d6775be144968dd9d126ba4089277c14054.patch";
+      hash = "sha256-U540bNyOonR0WJJlqudojDNSgldka4l85LTtZWDNZJk=";
+    })
+  ];
 
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
