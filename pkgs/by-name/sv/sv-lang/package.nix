@@ -16,6 +16,7 @@
 
 # options
 , doCheck ? true
+, includeTools ? true
 }: stdenv.mkDerivation (finalAttrs: {
   pname = "sv-lang";
   version = "6.0";
@@ -45,8 +46,10 @@
     })
   ];
 
+  inherit includeTools;
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
+    (lib.cmakeBool "SLANG_INCLUDE_TOOLS" finalAttrs.includeTools)
     (lib.cmakeBool "SLANG_USE_MIMALLOC" false)
   ];
 
@@ -64,7 +67,17 @@
   nativeCheckInputs = [ catch2_3 ];
   inherit doCheck;
 
-  passthru.tests = {
+  postInstall = lib.optionalString (!finalAttrs.includeTools) ''
+    mkdir -p $out/.empty
+  '';
+
+  passthru.tests = let
+    withOpts = opts: finalAttrs.finalPackage.overrideAttrs (_: opts);
+  in {
+    # ensure that the options work:
+    noTests = (withOpts { doCheck = false; }).tests.version;
+    noTools = withOpts { includeTools = false; };
+  } // lib.optionalAttrs finalAttrs.includeTools {
     version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
 
@@ -73,7 +86,8 @@
     homepage = "https://github.com/MikePopoloski/slang";
     license = licenses.mit;
     maintainers = with maintainers; [ sharzy ];
-    mainProgram = "slang";
     platforms = platforms.all;
+  } // lib.optionalAttrs finalAttrs.includeTools {
+    mainProgram = "slang";
   };
 })
