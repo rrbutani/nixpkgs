@@ -15,9 +15,12 @@
 , fmt
 
 # options
-, doCheck ? true
+, doCheck ? includeTools
 , includeTools ? true
-}: stdenv.mkDerivation (finalAttrs: {
+}:
+  assert doCheck -> includeTools; # the regression tests need `slang::driver`
+
+stdenv.mkDerivation (finalAttrs: {
   pname = "sv-lang";
   version = "6.0";
 
@@ -76,7 +79,7 @@
   in {
     # ensure that the options work:
     noTests = (withOpts { doCheck = false; }).tests.version;
-    noTools = withOpts { includeTools = false; };
+    noTools = withOpts { includeTools = false; doCheck = false; };
   } // lib.optionalAttrs finalAttrs.includeTools {
     version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
