@@ -14,13 +14,16 @@
 , catch2_3
 , fmt
 , mimalloc
+, pythonPackages
 
 # options
 , doCheck ? includeTools
 , includeTools ? true
-, useMimalloc ? true
+, useMimalloc ? !enablePython
+, enablePython ? false
 }:
   assert doCheck -> includeTools; # the regression tests need `slang::driver`
+  assert enablePython -> !useMimalloc; # mimalloc is incompatible w/py bindings
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sv-lang";
@@ -33,7 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-mT8sfUz0H4jWM/SkV/uW4kmVKE9UQy6XieG65yJvIA8=";
   };
 
-  outputs = [ "out" "lib" "dev" ];
+  outputs = [ "out" "lib" "dev" ]
+    ++ lib.optional enablePython "python";
 
   # See: https://github.com/NixOS/nixpkgs/issues/144170
   # See: https://github.com/MikePopoloski/slang/blob/v6.0/scripts/sv-lang.pc.in#L2-L3
@@ -83,29 +87,44 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = lib.optionalString
     finalAttrs.useMimalloc "-DMIMALLOC_NEW_DELETE_H=1";
 
-  inherit includeTools useMimalloc;
+  inherit includeTools useMimalloc enablePython;
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
     (lib.cmakeBool "SLANG_INCLUDE_TOOLS" finalAttrs.includeTools)
     (lib.cmakeBool "SLANG_USE_MIMALLOC" finalAttrs.useMimalloc)
+    (lib.cmakeBool "SLANG_INCLUDE_PYLIB" finalAttrs.enablePython)
   ];
 
   nativeBuildInputs = [
     cmake
     ninja
     python3
-  ];
+  ] ++ lib.optional (
+    finalAttrs.enablePython &&
+    (stdenv.buildPlatform.canExecute stdenv.hostPlatform)
+  ) pythonPackages.pythonImportsCheckHook;
 
   buildInputs = [
     boost182
     fmt
-  ] ++ lib.optional finalAttrs.useMimalloc mimalloc;
+  ] ++ lib.optional finalAttrs.useMimalloc mimalloc
+    ++ lib.optionals finalAttrs.enablePython [
+      pythonPackages.python
+      pythonPackages.pybind11
+    ];
 
   nativeCheckInputs = [ catch2_3 ];
   inherit doCheck;
 
+  pythonImportsCheck = lib.optional finalAttrs.enablePython [ "pyslang" ];
+
   postInstall = lib.optionalString (!finalAttrs.includeTools) ''
     mkdir -p $out/.empty
+  '' + lib.optionalString (finalAttrs.enablePython) ''
+    py_ver=${lib.versions.majorMinor pythonPackages.python.version}
+    py_dir="$python/lib/python$py_ver/site-packages/"
+    mkdir -p "$py_dir"
+    mv $out/*.cpython* "$py_dir"
   '';
 
   passthru.tests = let

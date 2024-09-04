@@ -15335,6 +15335,12 @@ self: super: with self; {
 
   svgwrite = callPackage ../development/python-modules/svgwrite { };
 
+  sv-lang = toPythonModule (pkgs.sv-lang.override {
+    enablePython = true;
+    includeTools = false;
+    pythonPackages = self;
+  }).python;
+
   sv-ttk = callPackage ../development/python-modules/sv-ttk { };
 
   swagger-spec-validator = callPackage ../development/python-modules/swagger-spec-validator { };
