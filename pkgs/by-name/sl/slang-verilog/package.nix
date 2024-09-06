@@ -22,9 +22,11 @@
 , includeTools ? true
 , useMimalloc ? !enablePython
 , enablePython ? false
+, generatePythonBindingStubs ? enablePython
 }:
   assert doCheck -> includeTools; # the regression tests need `slang::driver`
   assert enablePython -> !useMimalloc; # mimalloc is incompatible w/py bindings
+  assert generatePythonBindingStubs -> enablePython;
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "slang-verilog"; # https://repology.org/project/slang-verilog
@@ -88,7 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = lib.optionalString
     finalAttrs.useMimalloc "-DMIMALLOC_NEW_DELETE_H=1";
 
-  inherit includeTools useMimalloc enablePython;
+  inherit includeTools useMimalloc enablePython generatePythonBindingStubs;
   cmakeFlags = [
     (lib.cmakeBool "SLANG_INCLUDE_TESTS" finalAttrs.doCheck)
     (lib.cmakeBool "SLANG_INCLUDE_TOOLS" finalAttrs.includeTools)
@@ -126,7 +128,12 @@ stdenv.mkDerivation (finalAttrs: {
     py_dir="$python/lib/python$py_ver/site-packages/"
     mkdir -p "$py_dir"
     mv $out/*.cpython* "$py_dir"
-  '';
+  ''
+  # TODO: do this the right way (pybind11-stubgen + fixups?)
+  + (lib.optionalString finalAttrs.generatePythonBindingStubs ''
+    mkdir -p "$py_dir/pyslang/"
+    cp ${./pyslang.pyi} "$py_dir/pyslang/__init__.pyi"
+  '');
 
   passthru.tests = let
     withOpts = opts: finalAttrs.finalPackage.overrideAttrs (_: opts);
